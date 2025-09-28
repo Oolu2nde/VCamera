@@ -1,3 +1,4 @@
-[submodule "opensdk"]
-	path = opensdk
-	url = https://github.com/WaxMoon/opensdk.git
+- name: Checkout repository
+  uses: actions/checkout@v4
+  with:
+    submodules: true
