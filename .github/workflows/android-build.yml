@@ -1,4 +1,4 @@
-name: Android CI Build (inspect & build)
+name: Android CI Build - VCamera
 
 on:
   push:
@@ -9,11 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # If your Gradle root is not the repo root, change this to the folder name
-      # e.g. PROJECT_DIR: VCamera
-      PROJECT_DIR: .
-
     steps:
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v4
@@ -21,35 +16,21 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - name: Setup Java 17 (required for modern Gradle)
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Show repository root and locate Gradle files (for debugging)
-        run: |
-          echo "=== pwd ==="
-          pwd
-          echo "=== list root ==="
-          ls -la
-          echo "=== find build.gradle/settings.gradle (maxdepth 4) ==="
-          find . -maxdepth 4 -type f \( -name 'build.gradle' -o -name 'build.gradle.kts' -o -name 'settings.gradle' -o -name 'settings.gradle.kts' \) || true
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
 
-      - name: Build Debug APK (using system Gradle)
-        run: |
-          echo "PROJECT_DIR=$PROJECT_DIR"
-          cd $PROJECT_DIR
-          echo "=== pwd after cd ==="
-          pwd
-          echo "=== ls here ==="
-          ls -la
-          # Try the build
-          gradle assembleDebug --stacktrace
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
         timeout-minutes: 30
 
-      - name: Upload Debug APK (if produced)
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
